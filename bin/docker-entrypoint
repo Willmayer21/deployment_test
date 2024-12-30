@@ -1,6 +1,12 @@
 #!/bin/bash -e
 
-# Remove any existing server.pid file
-rm -f /rails/tmp/pids/server.pid
+# If running the rails server then initialize required directories
+if [ "${*}" == "./bin/rails server -b 0.0.0.0 -p 3000 -e production --verbose" ]; then
+  echo "Starting Rails server..."
+
+  # Ensure downloads directory exists and has correct permissions
+  mkdir -p /rails/public/downloads
+  chmod 755 /rails/public/downloads
+fi
 
 exec "${@}"
