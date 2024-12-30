@@ -17,7 +17,7 @@ Rails.application.configure do
   config.action_controller.perform_caching = true
 
   # Ensures that a master key has been made available in ENV["RAILS_MASTER_KEY"]
-  config.require_master_key = true
+  config.require_master_key = false
 
   # Enable serving static files - required for Railway
   config.public_file_server.enabled = true
