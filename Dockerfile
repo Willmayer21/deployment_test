@@ -41,19 +41,29 @@ FROM base
 
 # Install packages needed for deployment including yt-dlp
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl python3 python3-pip ffmpeg && \
-    pip3 install --no-cache-dir yt-dlp && \
+    apt-get install --no-install-recommends -y \
+    curl \
+    python3 \
+    python3-pip \
+    python3-venv \
+    ffmpeg && \
+    python3 -m venv /opt/venv && \
+    /opt/venv/bin/pip install --no-cache-dir yt-dlp && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
+
+# Add virtual environment to PATH
+ENV PATH="/opt/venv/bin:$PATH"
 
 # Copy built artifacts: gems, application
 COPY --from=build /usr/local/bundle /usr/local/bundle
 COPY --from=build /rails /rails
 
-# Run and own only the runtime files as a non-root user for security
+# Create directories and set permissions
 RUN useradd rails --create-home --shell /bin/bash && \
-    chown -R rails:rails db log tmp public && \
-    mkdir -p public/downloads && \
-    chown -R rails:rails public/downloads
+    mkdir -p log tmp public/downloads && \
+    chown -R rails:rails log tmp public && \
+    chown -R rails:rails /opt/venv
+
 USER rails:rails
 
 # Entrypoint runs setup script
@@ -61,4 +71,4 @@ ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 
 # Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
-CMD ["./bin/rails", "server", "-b", "0.0.0.0", "-p", "3000", "-e", "production", "--verbose"]
+CMD ["./bin/rails", "server", "-b", "0.0.0.0", "-p", "3000"]
